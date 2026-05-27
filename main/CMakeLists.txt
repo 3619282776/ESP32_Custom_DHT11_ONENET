@@ -1,3 +1,3 @@
-idf_component_register(SRCS "main.c" "WIFI/wifi_driver.c" "Console/console_driver.c" "MQTT/mqtt_driver.c"
-                    REQUIRES nvs_flash esp_netif esp_wifi console driver mqtt
+idf_component_register(SRCS "main.c" "WIFI/wifi_driver.c" "Console/console_driver.c" "MQTT/mqtt_driver.c" "DHT11/DHT11_driver.c" "DHT11/dht.c"
+                    REQUIRES nvs_flash esp_netif esp_wifi console driver mqtt 
                     INCLUDE_DIRS ".")

@@ -4,7 +4,10 @@
 #include "mqtt_client.h"
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
+#include "MQTT/mqtt_driver.h"
+#include "DHT11/DHT11_driver.h"
 esp_mqtt_client_handle_t client = NULL;
+TaskHandle_t* task_handle=NULL;
 #define TOPIC "$sys/3D2J66rvKZ/ESP32/thing/property/post"
 char* buffer="{\"id\":\"123\",\"version\":\"1.0\",\"params\":{\"tem\":{\"value\":55.5}}}";
 
@@ -15,6 +18,7 @@ static void mqtt_backcall_functon(void *arg, esp_event_base_t base, int32_t even
     {
         case MQTT_EVENT_CONNECTED:
             printf("MQTT connected\n");
+            xTaskCreate(dht11_get, "dht_mqtt", 2048, NULL, 5,task_handle);
             // 订阅属性上报回复主题，用于接收平台处理结果
             esp_mqtt_client_subscribe(event->client, "$sys/3D2J66rvKZ/ESP32/thing/property/post/reply", 1);
             break;
@@ -23,7 +27,8 @@ static void mqtt_backcall_functon(void *arg, esp_event_base_t base, int32_t even
             printf("Received data: %.*s\n", event->data_len, event->data);
             break;
         case MQTT_EVENT_DISCONNECTED:
-            printf("MQTT disconnected\n");
+            printf("MQTT disconnected and deletd task\n");
+            vTaskDelete(*task_handle);
             break;
         case MQTT_EVENT_ERROR:
             printf("MQTT error\n");

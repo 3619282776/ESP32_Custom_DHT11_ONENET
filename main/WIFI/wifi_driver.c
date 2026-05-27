@@ -6,6 +6,7 @@
 #include "esp_netif.h"
 #include "lwip/ip4_addr.h"
 #include "freertos/queue.h"
+#include "MQTT/mqtt_driver.h"
 void wifi_event_cb(void* event_handler_arg,esp_event_base_t event_base,int32_t event_id,void* event_data)
 {
     if (event_base == WIFI_EVENT)//Wifi event 
@@ -21,6 +22,7 @@ void wifi_event_cb(void* event_handler_arg,esp_event_base_t event_base,int32_t e
         case WIFI_EVENT_STA_CONNECTED:
         {
             printf("Connect to AP\n");
+
             break;
         }
         case WIFI_EVENT_STA_DISCONNECTED:
@@ -55,6 +57,7 @@ void wifi_event_cb(void* event_handler_arg,esp_event_base_t event_base,int32_t e
         {
             esp_netif_ip_info_t *t = (esp_netif_ip_info_t*)event_data;
             printf("IP is " IPSTR "\n", IP2STR(&t->ip));
+            mqtt_init();
             break;
         }
         case IP_EVENT_AP_STAIPASSIGNED:
