@@ -4,6 +4,7 @@
 #include "esp_random.h"
 #include "driver/uart.h"
 #include "driver/gpio.h"
+#include "MQTT/mqtt_driver.h"
 #include "esp_console.h"
 #include "esp_heap_caps.h"
 #include "freertos/task.h"
@@ -106,36 +107,36 @@ static int resume_task_cmd(int argc,char **argv)
         return 0;
     }
 }
-// static int start_mqtt_cmd()
-// {
-//     printf("start begin mqtt\n");
-//     mqtt_init();
-//     return 0;
-// }
+static int start_mqtt_cmd()
+{
+    printf("start begin mqtt\n");
+    mqtt_init();
+    return 0;
+}
 
-// static int mqtt_cmd(int argc,char **argv)
-// {
-//     int nerrors = arg_parse(argc, argv, (void**)&mqtt_args);
-//     if (nerrors != 0) {
-//         arg_print_errors(stdout, mqtt_args.end, "my_cmd");
-//         return 1;
-//     }
-//     float tem=mqtt_args.dbl_arg->dval[0];
-//     printf("send %.1f to mqtt\n",tem);
-//     mqtt_send(tem);
-//     return 0;
-// }
+static int mqtt_cmd(int argc,char **argv)
+{
+    int nerrors = arg_parse(argc, argv, (void**)&mqtt_args);
+    if (nerrors != 0) {
+        arg_print_errors(stdout, mqtt_args.end, "my_cmd");
+        return 1;
+    }
+    float tem=mqtt_args.dbl_arg->dval[0];
+    printf("send %.1f to mqtt\n",tem);
+    mqtt_send(tem);
+    return 0;
+}
 
-// static int random_cmd()
-// {
-//     uint32_t random =esp_random();
-//     random=random%100;
-//     printf("random number is %lu\n",random);
-//     float tem=random;
-//     printf("send %.1f to mqtt\n",tem);
-//     mqtt_send(tem);
-//     return 0;
-// }
+static int random_cmd()
+{
+    uint32_t random =esp_random();
+    random=random%100;
+    printf("random number is %lu\n",random);
+    float tem=random;
+    printf("send %.1f to mqtt\n",tem);
+    mqtt_send(tem);
+    return 0;
+}
 
 
 
@@ -226,30 +227,30 @@ void console_init()//init console
     };
     esp_console_cmd_register(&cmd8);
 
-    // esp_console_cmd_t cmd9={
-    //     .func=&mqtt_cmd,
-    //     .command="mqtt_send",
-    //     .help="mqtt to send float",
-    //     .hint=NULL
-    // };
-    // esp_console_cmd_register(&cmd9);
+    esp_console_cmd_t cmd9={
+        .func=&mqtt_cmd,
+        .command="mqtt_send",
+        .help="mqtt to send float",
+        .hint=NULL
+    };
+    esp_console_cmd_register(&cmd9);
 
-    // esp_console_cmd_t cmd10={
-    //     .func=&start_mqtt_cmd,
-    //     .command="mqtt_start",
-    //     .help="start mqtt",
-    //     .hint=NULL
-    // };
-    // esp_console_cmd_register(&cmd10);
+    esp_console_cmd_t cmd10={
+        .func=&start_mqtt_cmd,
+        .command="mqtt_start",
+        .help="start mqtt",
+        .hint=NULL
+    };
+    esp_console_cmd_register(&cmd10);
 
 
-    // esp_console_cmd_t cmd11={
-    //     .func=&random_cmd,
-    //     .command="random",
-    //     .help="random a number",
-    //     .hint=NULL
-    // };
-    // esp_console_cmd_register(&cmd11);
+    esp_console_cmd_t cmd11={
+        .func=&random_cmd,
+        .command="random",
+        .help="random a number",
+        .hint=NULL
+    };
+    esp_console_cmd_register(&cmd11);
 
 
 
