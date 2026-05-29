@@ -7,6 +7,41 @@
 #include "lwip/ip4_addr.h"
 #include "freertos/queue.h"
 #include "MQTT/mqtt_driver.h"
+#include "esp_timer.h"
+static esp_timer_handle_t timer_handle = NULL;
+static int reconnect_attempts = 0;
+#define MAX_RECONNECT_ATTEMPTS 5
+#define RECONNECT_INTERVAL_MS 3000
+
+static void reconnect_timer_cb(void *arg)
+{
+    if(reconnect_attempts > MAX_RECONNECT_ATTEMPTS )
+    {
+        printf("reconnect has five time stop reconnect\n");
+        esp_timer_stop(timer_handle);
+        reconnect_attempts=0;
+    }
+    else{
+    reconnect_attempts++;
+    printf("NOW is reconnect %d time\n",reconnect_attempts);
+    esp_wifi_connect();
+    }
+}
+
+
+
+
+
+static void init_reconnect_timer()//init esp_timer
+{
+    const esp_timer_create_args_t timer_args={
+        .callback = &reconnect_timer_cb,
+        .name ="wifi_reconnect_timer"
+    };
+    esp_timer_create(&timer_args,&timer_handle);
+}
+
+
 void wifi_event_cb(void* event_handler_arg,esp_event_base_t event_base,int32_t event_id,void* event_data)
 {
     if (event_base == WIFI_EVENT)//Wifi event 
@@ -28,7 +63,10 @@ void wifi_event_cb(void* event_handler_arg,esp_event_base_t event_base,int32_t e
         case WIFI_EVENT_STA_DISCONNECTED:
         {
             printf("wifi has been disconnected\n");
-            esp_wifi_connect();
+
+            if (timer_handle && !esp_timer_is_active(timer_handle)) {
+             esp_timer_start_periodic(timer_handle, RECONNECT_INTERVAL_MS * 1000);
+                     }
             break;
         }
         case WIFI_EVENT_AP_STACONNECTED:
@@ -57,6 +95,8 @@ void wifi_event_cb(void* event_handler_arg,esp_event_base_t event_base,int32_t e
         {
             esp_netif_ip_info_t *t = (esp_netif_ip_info_t*)event_data;
             printf("IP is " IPSTR "\n", IP2STR(&t->ip));
+            if(timer_handle) esp_timer_stop(timer_handle);
+            reconnect_attempts=0;
             mqtt_init();
             break;
         }
@@ -78,6 +118,7 @@ static void wifi_init()
     esp_event_loop_create_default();//创建默认事件循环
     esp_event_handler_register(WIFI_EVENT,ESP_EVENT_ANY_ID,&wifi_event_cb,NULL);
     esp_event_handler_register(IP_EVENT,ESP_EVENT_ANY_ID,&wifi_event_cb,NULL);//注册默认事件的监听事件
+    init_reconnect_timer();
 }
 void Wifi_sta_init(const char *ssid,const char *password)
 {

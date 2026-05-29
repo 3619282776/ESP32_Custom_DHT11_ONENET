@@ -28,7 +28,7 @@ static void mqtt_backcall_functon(void *arg, esp_event_base_t base, int32_t even
             break;
         case MQTT_EVENT_DISCONNECTED:
             printf("MQTT disconnected and deletd task\n");
-            vTaskDelete(*task_handle);
+            vTaskDelete(task_handle);
             break;
         case MQTT_EVENT_ERROR:
             printf("MQTT error\n");

@@ -7,6 +7,9 @@
 #include "DHT11/dht.h"
 #include "DHT11/DHT11_driver.h"
 #include "MQTT/mqtt_driver.h"
+
+
+
 void app_main(void)
 {
     nvs_flash_init();
